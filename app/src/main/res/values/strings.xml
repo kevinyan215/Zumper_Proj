@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Zumper_Proj</string>
+    <string name="title_activity_maps">Map</string>
+    <!--<string name="title_activity_maps">Maps</string>-->
 </resources>
