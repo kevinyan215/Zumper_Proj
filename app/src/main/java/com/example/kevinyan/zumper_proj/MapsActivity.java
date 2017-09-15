@@ -16,13 +16,14 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback{
+public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, GoogleMap.OnMarkerClickListener{
 
     private GoogleMap mMap;
     private PlacesAPI service;
@@ -58,6 +59,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         displayPlaces(getLocation());
 
+        mMap.setOnMarkerClickListener(this);
+
         mMap.setOnCameraMoveListener(new GoogleMap.OnCameraMoveListener() {
             @Override
             public void onCameraMove() {
@@ -81,6 +84,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                     for(int i = 0; i < response.body().getResults().size(); i++){
 
+                        String id = response.body().getResults().get(i).getId();
                         String name = response.body().getResults().get(i).getName();
                         String address = response.body().getResults().get(i).getVicinity();
                         double rating = response.body().getResults().get(i).getRating();
@@ -90,6 +94,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         List.names.add(name);
                         List.rating.add(rating);
 
+                        Log.d("response", id);
                         Log.d("response", name + "");
                         Log.d("response", address);
                         Log.d("response", rating + "");
@@ -98,7 +103,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         MarkerOptions markerOptions = new MarkerOptions();
                         markerOptions.position(new LatLng(lat,lng));
                         markerOptions.title(name + " " + address + " " + rating);
-                        mMap.addMarker(markerOptions);
+                        Marker marker = mMap.addMarker(markerOptions);
+                        marker.setTag(id);
 
                     }
                 }catch(Exception e){
@@ -126,4 +132,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         return true;
     }
 
+    @Override
+    public boolean onMarkerClick(Marker marker) {
+
+        Log.d("marker id", marker.getTag() + "");
+
+        Intent markerIntent = new Intent(this, MarkerActivity.class);
+        markerIntent.putExtra("id", marker.getTag() + "");
+        startActivity(markerIntent);
+        return true;
+    }
 }

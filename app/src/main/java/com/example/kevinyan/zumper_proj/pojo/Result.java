@@ -12,6 +12,11 @@ public class Result {
     private ArrayList<String> types = new ArrayList<>();
     private String vicinity;
     private Geometry geometry;
+    private String id;
+
+    public String getId(){
+        return id;
+    }
 
     public String getName(){
         return name;
