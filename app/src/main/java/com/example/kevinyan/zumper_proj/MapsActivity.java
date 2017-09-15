@@ -1,13 +1,16 @@
 package com.example.kevinyan.zumper_proj;
 
+import android.content.Intent;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MotionEvent;
+import android.view.View;
 import android.widget.Toast;
 
-import com.example.kevinyan.zumper_proj.model.PlaceResponse;
-import com.example.kevinyan.zumper_proj.model.RetrofitPlaces;
-import com.example.kevinyan.zumper_proj.model.RetrofitPlacesHelper;
+import com.example.kevinyan.zumper_proj.pojo.PlaceResponse;
+import com.example.kevinyan.zumper_proj.model.PlacesAPI;
+import com.example.kevinyan.zumper_proj.model.RetrofitHelper;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -19,10 +22,10 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
+public class MapsActivity extends FragmentActivity implements OnMapReadyCallback{
 
     private GoogleMap mMap;
-    private RetrofitPlaces retrofitPlaces;
+    private PlacesAPI service;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,8 +36,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
-        RetrofitPlacesHelper.init();
-        retrofitPlaces = RetrofitPlacesHelper.getService();
+        RetrofitHelper.init();
+        service = RetrofitHelper.getService();
     }
 
 
@@ -50,33 +53,55 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-        displayRestaurant();
+//        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(37.7723603,-122.4298578),15.0f));
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(37.7723603,-122.4298578),17.0f));
+
+        displayPlaces(getLocation());
+
+        mMap.setOnCameraMoveListener(new GoogleMap.OnCameraMoveListener() {
+            @Override
+            public void onCameraMove() {
+//                mMap.clear();
+                Log.d("Camera", "move");
+//                displayPlaces(getLocation());
+            }
+        });
     }
 
-    public void displayRestaurant(){
-        Call<PlaceResponse> exampleResponse = retrofitPlaces.getPlace();
-        exampleResponse.enqueue(new Callback<PlaceResponse>() {
+    public String getLocation(){
+        return mMap.getCameraPosition().target.latitude + "," + mMap.getCameraPosition().target.longitude;
+    }
+
+    public void displayPlaces(String location){
+        Call<PlaceResponse> call = service.getPicture(location);
+        call.enqueue(new Callback<PlaceResponse>() {
             @Override
             public void onResponse(Call<PlaceResponse> call, Response<PlaceResponse> response) {
                 try{
-                    for (int i = 0; i < response.body().getResults().size(); i++) {
-                        Double lat = response.body().getResults().get(i).getGeometry().getLocation().getLat();
-                        Double lng = response.body().getResults().get(i).getGeometry().getLocation().getLng();
-                        String placeName = response.body().getResults().get(i).getName();
-                        String vicinity = response.body().getResults().get(i).getVicinity();
+
+                    for(int i = 0; i < response.body().getResults().size(); i++){
+
+                        String name = response.body().getResults().get(i).getName();
+                        String address = response.body().getResults().get(i).getVicinity();
                         double rating = response.body().getResults().get(i).getRating();
+                        double lat = response.body().getResults().get(i).getGeometry().getLocation().getLat();
+                        double lng = response.body().getResults().get(i).getGeometry().getLocation().getLng();
+
+                        List.names.add(name);
+                        List.rating.add(rating);
+
+                        Log.d("response", name + "");
+                        Log.d("response", address);
+                        Log.d("response", rating + "");
+                        Log.d("response", lat + ", " + lng);
 
                         MarkerOptions markerOptions = new MarkerOptions();
-                        markerOptions.position(new LatLng(lat, lng));
-                        markerOptions.title(placeName + ", " + vicinity + ", " + rating);
-
+                        markerOptions.position(new LatLng(lat,lng));
+                        markerOptions.title(name + " " + address + " " + rating);
                         mMap.addMarker(markerOptions);
-                        mMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(lat, lng)));
-                        mMap.animateCamera(CameraUpdateFactory.zoomTo(15));
 
-                        Log.d("response", placeName);
                     }
-                } catch (Exception e) {
+                }catch(Exception e){
                     Log.d("onResponse", "There is an error");
                     e.printStackTrace();
                 }
@@ -85,8 +110,20 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             @Override
             public void onFailure(Call<PlaceResponse> call, Throwable t) {
                 Toast.makeText(MapsActivity.this, "API Failure", Toast.LENGTH_LONG).show();
-
             }
         });
     }
+
+    public void displayList(View view){
+        Intent startListIntent = new Intent(this, List.class);
+        startActivity(startListIntent);
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event){
+        int action = event.getAction();
+        Log.d("gesture", action +  "");
+        return true;
+    }
+
 }
