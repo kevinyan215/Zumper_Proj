@@ -12,10 +12,14 @@ public class Result {
     private ArrayList<String> types = new ArrayList<>();
     private String vicinity;
     private Geometry geometry;
-    private String id;
+    private String place_id;
+    private ArrayList<Review> reviews;
 
-    public String getId(){
-        return id;
+    public ArrayList<Review> getReviews(){
+        return reviews;
+    }
+    public String getPlaceId(){
+        return place_id;
     }
 
     public String getName(){

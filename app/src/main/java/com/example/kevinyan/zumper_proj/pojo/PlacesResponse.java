@@ -6,7 +6,7 @@ import java.util.ArrayList;
  * Created by kevinyan on 9/10/17.
  */
 
-public class PlaceResponse {
+public class PlacesResponse {
     private ArrayList<Result> results = new ArrayList<>();
 
     public ArrayList<Result> getResults(){

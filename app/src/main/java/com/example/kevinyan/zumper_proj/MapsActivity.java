@@ -8,7 +8,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Toast;
 
-import com.example.kevinyan.zumper_proj.pojo.PlaceResponse;
+import com.example.kevinyan.zumper_proj.pojo.PlacesResponse;
 import com.example.kevinyan.zumper_proj.model.PlacesAPI;
 import com.example.kevinyan.zumper_proj.model.RetrofitHelper;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -76,15 +76,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     public void displayPlaces(String location){
-        Call<PlaceResponse> call = service.getPicture(location);
-        call.enqueue(new Callback<PlaceResponse>() {
+        Call<PlacesResponse> call = service.getPicture(location);
+        call.enqueue(new Callback<PlacesResponse>() {
             @Override
-            public void onResponse(Call<PlaceResponse> call, Response<PlaceResponse> response) {
+            public void onResponse(Call<PlacesResponse> call, Response<PlacesResponse> response) {
                 try{
 
                     for(int i = 0; i < response.body().getResults().size(); i++){
 
-                        String id = response.body().getResults().get(i).getId();
+                        String id = response.body().getResults().get(i).getPlaceId();
                         String name = response.body().getResults().get(i).getName();
                         String address = response.body().getResults().get(i).getVicinity();
                         double rating = response.body().getResults().get(i).getRating();
@@ -114,7 +114,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
 
             @Override
-            public void onFailure(Call<PlaceResponse> call, Throwable t) {
+            public void onFailure(Call<PlacesResponse> call, Throwable t) {
                 Toast.makeText(MapsActivity.this, "API Failure", Toast.LENGTH_LONG).show();
             }
         });
